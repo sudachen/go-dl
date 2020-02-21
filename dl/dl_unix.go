@@ -26,9 +26,9 @@ func loadLibrary(dlname string) (unsafe.Pointer, error) {
 func bindFunction(h unsafe.Pointer, funcname string, p unsafe.Pointer) error {
 	n := C.CString(funcname)
 	defer C.free(unsafe.Pointer(n))
-	fp := (*C.void)(C.dlsym(h,n))
+	fp := (*C.void)(C.dlsym(h, n))
 	if fp == nil {
-		return xerrors.Errorf("dynamic library does not have symbol %v",funcname)
+		return xerrors.Errorf("dynamic library does not have symbol %v", funcname)
 	}
 	q := (**C.void)(p)
 	(*q) = fp
@@ -37,7 +37,7 @@ func bindFunction(h unsafe.Pointer, funcname string, p unsafe.Pointer) error {
 
 func expandCache(s string) string {
 	if usr, err := user.Current(); err != nil {
-		panic( err.Error() )
+		panic(err.Error())
 	} else {
 		return usr.HomeDir + "/.cache/" + s
 	}
