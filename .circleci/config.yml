@@ -30,15 +30,17 @@ jobs:
           root: .
           paths:
             - bin
-            
+
       - run: cp tests.exe bin
 
   test-windows:
     executor: win/default
+    shell: cmd.exe
 
     steps:
       - attach_workspace:
-          at: ./ws
+          at: .\ws
+      - run: dir /s
       - run: .\ws\bin\tests.exe -test.v=true -test.coverprofile=c.out
 
 workflows:
