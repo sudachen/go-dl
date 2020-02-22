@@ -19,8 +19,8 @@ run-tests-1:
 
 run-tests-2:
 	sed -i -e '\:^github.com/sudachen/go-fp/:d' c.out
-	cp c.out gocov.txt
 	sed -i -e 's:github.com/sudachen/go-dl/::g' c.out
+	awk '/\.go/{print "github.com/sudachen/go-dl/"$$0}/^mode/{print $$0}' < c.out > gocov.txt
 
 run-tests: run-tests-1 run-tests-2
 
@@ -29,3 +29,14 @@ run-cover:
 
 run-cover-tests: run-tests run-cover
 
+run-cover-all:
+	make run-tests-1
+	cp c.out c1.out
+	make win-run-tests
+	mv c.out c2.out
+	cp c1.out c3.out
+	tail -n +2 c2.out >> c3.out
+	head -n 1 c3.out > c.out
+	tail -n +2 c3.out | sort >> c.out
+	make run-tests-2
+	make run-cover

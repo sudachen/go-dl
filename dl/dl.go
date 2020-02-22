@@ -38,7 +38,6 @@ Package dl implements loading shared libraries and binding functions
 */
 package dl
 
-import "C"
 import (
 	"bytes"
 	"compress/gzip"

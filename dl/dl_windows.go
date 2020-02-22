@@ -2,7 +2,6 @@
 
 package dl
 
-import "C"
 import (
 	"os"
 	"strings"
