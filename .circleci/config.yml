@@ -40,4 +40,9 @@ workflows:
   test-workflow:
     jobs:
       - test-linux
-      - test-windows
+      - test-windows:
+          requires:
+            - test-linux
+
+
+
