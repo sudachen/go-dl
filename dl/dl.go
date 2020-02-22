@@ -1,8 +1,44 @@
 /*
 Package dl implements loading shared libraries and binding functions
+
+	/✱
+	int function(int);
+
+	#define DEFINE_JUMPER(x) \
+		 void *_godl_##x = (void*)0; \
+		 __asm__(".global "#x"\n\t"#x":\n\tmovq _godl_"#x"(%rip),%rax\n\tjmp *%rax\n")
+
+	DEFINE_JUMPER(function)
+	✱/
+	import "C"
+
+	import (
+		"github.com/sudachen/go-dl/dl"
+		"runtime"
+		"unsafe"
+	)
+
+	func init() {
+		if runtime.GOOS == "linux" && runtime.GOARCH == "amd64"{
+			so := dl.Load(
+				dl.Cache("dl/go-dl/libfunction.so"),
+				dl.LzmaExternal("https://github.com/sudachen/go-dl/releases/download/initial/libfunction_lin64.lzma"))
+		} else if runtime.GOOS == "windows" && runtime.GOARCH == "amd64" {
+			so := dl.Load(
+				dl.Cache("dl/go-dl/function.dll"),
+				dl.LzmaExternal("https://github.com/sudachen/go-dl/releases/download/initial/libfunction_win64.lzma"))
+		}
+		so.Bind("function",unsafe.Pointer(&C._godl_function))
+	}
+
+	func main() {
+		C.function(0)
+	}
+
 */
 package dl
 
+import "C"
 import (
 	"bytes"
 	"compress/gzip"
@@ -69,36 +105,9 @@ func Load(a ...interface{}) SO {
 	return SO{}
 }
 
+
 /*
 Bind binds the pointer to the shared library function
-
-	//
-	//int function(int);
-	//
-	//#define DEFINE_JUMPER(x) \
-	//        void *_godl_##x = (void*)0; \
-	//        __asm__(".global "#x"\n\t"#x":\n\tmovq _godl_"#x"(%rip),%rax\n\tjmp *%rax\n")
-	//
-	//DEFINE_JUMPER(function)
-	//
-	import "C"
-
-	func init() {
-		if runtime.GOOS == "linux" && runtime.GOARCH == "amd64"{
-			so := dl.Load(
-				dl.Cache("dl/go-dl/libfunction.so"),
-				dl.LzmaExternal("https://github.com/sudachen/go-dl/releases/download/initial/libfunction_lin64.lzma"))
-		} else if runtime.GOOS == "windows" && runtime.GOARCH == "amd64" {
-			so := dl.Load(
-				dl.Cache("dl/go-dl/function.dll"),
-				dl.LzmaExternal("https://github.com/sudachen/go-dl/releases/download/initial/libfunction_win64.lzma"))
-		}
-		so.Bind("function",unsafe.Pointer(&C._godl_function))
-	}
-
-	func main() {
-		C.function(0)
-	}
 */
 func (so SO) Bind(funcname string, ptrptr unsafe.Pointer) {
 	if !so.Ok() {
