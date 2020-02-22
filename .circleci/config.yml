@@ -25,7 +25,7 @@ jobs:
 
       - run: make win-build-all
       - run: mkdir bin
-      - run: cp tests.exe bin
+      - run: cp tests.exe bin && chmod a+rx bin/tests.exe
       - persist_to_workspace:
           root: .
           paths:
@@ -38,8 +38,12 @@ jobs:
     steps:
       - attach_workspace:
           at: .\ws
-      - run: dir .\ws\bin
-      - run: .\ws\bin\tests.exe -test.v=true -test.coverprofile=c.out
+      - run:
+          command: dir /s
+          shell: cmd.exe
+      - run:
+          command: .\ws\bin\tests.exe -test.v=true -test.coverprofile=c.out
+          shell: cmd.exe
 
 workflows:
   version: 2
