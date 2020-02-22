@@ -23,7 +23,6 @@ jobs:
       - run: make run-tests
       #- run: /usr/local/bin/cc-test-reporter after-build -t gocov
 
-
       - run: make win-build-all
       - run: mkdir bin
       - run: cp tests.exe bin
@@ -34,7 +33,7 @@ jobs:
 
   test-windows:
     executor: win/default
-    shell: cmd.exe
+    #shell: cmd.exe
 
     steps:
       - attach_workspace:
