@@ -1,15 +1,16 @@
 build:
 	go build ./...
 
-win-build:
-	env GOOS=windows GOARCH=amd64 CGO_ENABLED=1 CC=x86_64-w64-mingw32-gcc make build
+win-build-all:
+	go build ./...
+	cd tests && go test -o ../tests.exe -c -covermode=atomic -coverprofile=c.out -coverpkg=../...
 
-win-run-tests-1:
-	cd tests && go test -o ../tests.test -c -covermode=atomic -coverprofile=c.out -coverpkg=../...
-	wine ./tests.test -test.v=true -test.coverprofile=c.out
+win-build:
+	env GOOS=windows GOARCH=amd64 CGO_ENABLED=1 CC=x86_64-w64-mingw32-gcc make win-build-all
 
 win-run-tests:
-	env GOOS=windows GOARCH=amd64 CGO_ENABLED=1 CC=x86_64-w64-mingw32-gcc make win-run-tests-1
+	env GOOS=windows GOARCH=amd64 CGO_ENABLED=1 CC=x86_64-w64-mingw32-gcc make win-build-all
+	wine ./tests.exe -test.v=true -test.coverprofile=c.out
 	make run-tests-2
 
 run-tests:

@@ -25,5 +25,5 @@ func bindFunction(h uintptr, funcname string, p unsafe.Pointer) (err error) {
 }
 
 func expandCache(s string) string {
-	return os.Getenv("USERPROFILE") + "\\.cache\\win\\" + strings.ReplaceAll(s,"/","\\")
+	return os.Getenv("localappdata") + "\\.cache\\" + strings.ReplaceAll(s,"/","\\")
 }
