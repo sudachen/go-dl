@@ -47,7 +47,7 @@ jobs:
           command: cp c.out .\ws\bin\c2.out
           shell: cmd.exe
       - persist_to_workspace:
-          root: .
+          root: C:\Users\circleci\project\ws
           paths:
             - bin
 
@@ -65,7 +65,7 @@ jobs:
       - attach_workspace:
           at: ./ws
       - run: cp ./ws/bin/c1.out ./c.out
-      - run: tr -d '\r' < ./ws/bin/c2.out >> c.out
+      - run: tail +2 ./ws/bin/c2.out | tr -d '\r' >> c.out
       - run: make run-test-2
       - run: /usr/local/bin/cc-test-reporter after-build -t gocov
 
