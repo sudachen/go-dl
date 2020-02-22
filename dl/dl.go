@@ -16,6 +16,9 @@ import (
 	"unsafe"
 )
 
+/*
+Load finds and loads shared library. Can download library form the Internet if it's required
+*/
 func Load(a ...interface{}) SO {
 	so := SO{
 		verbose: fu.IfsOption(Verbose(func(text string, vl int) {
@@ -64,6 +67,7 @@ func Load(a ...interface{}) SO {
 }
 
 /*
+Bind binds the pointer to the shared library function
 
 	//
 	//int function(int);
@@ -104,29 +108,72 @@ func (so SO) Bind(funcname string, ptrptr unsafe.Pointer) {
 	}
 }
 
+/*
+Ok returns true if SO object is associated with a shared library
+*/
 func (so SO) Ok() bool {
 	return so.dlHandle != 0
 }
 
+/*
+SO object incapacitates shared library handle
+*/
 type SO struct {
 	dlHandle uintptr
 	verbose  Verbose
 	onerror  OnError
 }
 
+/*
+LzmaExternal specifies url to the LZMA2 compressed shared library
+*/
 type LzmaExternal string
+
+/*
+GzipExternal specifies url to the Gzip compressed shared library
+*/
 type GzipExternal string
+
+/*
+External specifies url to the uncompressed shared library
+*/
 type External string
+
+/*
+Verbose defines function to print information messages
+*/
 type Verbose func(string, int)
+
+/*
+OnError defines function for error processing
+*/
 type OnError func(error)
+
+/*
+Cached specifies cache file and enables loading file from the Internet
+*/
 type Cached string
+
+/*
+System specifies system shared dll
+*/
 type System string
+
+/*
+Custom specifies full path to load specific shared library
+*/
 type Custom string
 
+/*
+Preload loads shared library from the Internet
+*/
 func (c Custom) Preload(a ...interface{}) {
 	preload(string(c), a...)
 }
 
+/*
+Preload loads shared library from the Internet
+*/
 func (c Cached) Preload(a ...interface{}) {
 	preload(expandCache(string(c)), a...)
 }
@@ -187,6 +234,9 @@ func preload(sopath string, a ...interface{}) (ok bool) {
 	return
 }
 
+/*
+Remove removes cached file
+*/
 func (c Cached) Remove() (err error) {
 	s := expandCache(string(c))
 	_, err = os.Stat(s)
