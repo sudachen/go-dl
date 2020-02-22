@@ -1,3 +1,10 @@
+
+[![CircleCI](https://circleci.com/gh/sudachen/go-dl.svg?style=svg)](https://circleci.com/gh/sudachen/go-dl)
+[![Maintainability](https://api.codeclimate.com/v1/badges/3b8d5bd3fe992a6ce7f2/maintainability)](https://codeclimate.com/github/sudachen/go-dl/maintainability)
+[![Test Coverage](https://api.codeclimate.com/v1/badges/3b8d5bd3fe992a6ce7f2/test_coverage)](https://codeclimate.com/github/sudachen/go-dl/test_coverage)
+[![Go Report Card](https://goreportcard.com/badge/github.com/sudachen/go-dl)](https://goreportcard.com/report/github.com/sudachen/go-dl)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+
 ```golang
 /*
 

@@ -14,18 +14,17 @@ jobs:
       MXNET_ENFORCE_DETERMINISM: 1
       OMP_NUM_THREADS: 4
       MXNET_OMP_MAX_THREADS: 4
-      CC_TEST_REPORTER_ID: 1fa4e7523c328c9429acef9148195f67755088bba7c2378e6bac9c21c420dd1b
-
 
     steps:
       - checkout
       - run: make build
-      - run: make run-tests
+      - run: make run-tests-1
       #- run: /usr/local/bin/cc-test-reporter after-build -t gocov
 
       - run: make win-build
       - run: mkdir bin
       - run: cp tests.exe bin && chmod a+rx bin/tests.exe
+      - run: cp c.out bin/c1.out
       - persist_to_workspace:
           root: .
           paths:
@@ -44,6 +43,31 @@ jobs:
       - run:
           command: .\ws\bin\tests.exe -test.v=true -test.coverprofile=c.out
           shell: cmd.exe
+      - run:
+          command: cp c.out .\ws\bin\c2.out
+          shell: cmd.exe
+      - persist_to_workspace:
+          root: .
+          paths:
+            - bin
+
+  test-cover:
+    docker:
+      - image: sudachen/go1137-ci
+
+    parallelism: 1
+
+    environment:
+      CC_TEST_REPORTER_ID: 14bae48c4a1d82ba4b9f60966bd070f4f164abc1ab1e7246b5b606b20ba5f406
+
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ./ws
+      - run: cp ./ws/bin/c1.out ./c.out
+      - run: tr -d '\r' < ./ws/bin/c2.out >> c.out
+      - run: make run-test-2
+      - run: /usr/local/bin/cc-test-reporter after-build -t gocov
 
 workflows:
   version: 2
@@ -53,6 +77,8 @@ workflows:
       - test-windows:
           requires:
             - test-linux
-
+      - test-cover:
+          requires:
+            - test-windows
 
 

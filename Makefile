@@ -13,15 +13,16 @@ win-run-tests:
 	wine ./tests.exe -test.v=true -test.coverprofile=c.out
 	make run-tests-2
 
-run-tests:
+run-tests-1:
 	cd tests && go test -o ../tests.test -c -covermode=atomic -coverprofile=c.out -coverpkg=../...
 	./tests.test -test.v=true -test.coverprofile=c.out
-	make run-tests-2
 
 run-tests-2:
 	sed -i -e '\:^github.com/sudachen/go-fp/:d' c.out
 	cp c.out gocov.txt
 	sed -i -e 's:github.com/sudachen/go-dl/::g' c.out
+
+run-tests: run-tests-1 run-tests-2
 
 run-cover:
 	go tool cover -html=gocov.txt
