@@ -1,4 +1,5 @@
 package tests
+
 import "C"
 import "unsafe"
 
@@ -13,11 +14,10 @@ DEFINE_JUMPER(function);
 */
 import "C"
 
-func function(i int) int{
+func function(i int) int {
 	return int(C.function(C.int(i)))
 }
 
 func functionPtr() unsafe.Pointer {
 	return unsafe.Pointer(&C._godl_function)
 }
-

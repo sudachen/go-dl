@@ -38,7 +38,7 @@ func bindFunction(h uintptr, funcname string, p unsafe.Pointer) error {
 }
 
 func expandCache(s string) string {
-	usr, err := user.Current();
+	usr, err := user.Current()
 	if err != nil {
 		panic(err.Error())
 	}

@@ -16,7 +16,7 @@ func loadLibrary(dlname string) (uintptr, error) {
 }
 
 func bindFunction(h uintptr, funcname string, p unsafe.Pointer) (err error) {
-	addr, err := syscall.GetProcAddress(syscall.Handle(h),funcname)
+	addr, err := syscall.GetProcAddress(syscall.Handle(h), funcname)
 	if err == nil {
 		q := (*uintptr)(p)
 		(*q) = addr
@@ -25,5 +25,5 @@ func bindFunction(h uintptr, funcname string, p unsafe.Pointer) (err error) {
 }
 
 func expandCache(s string) string {
-	return os.Getenv("localappdata") + "\\.cache\\" + strings.ReplaceAll(s,"/","\\")
+	return os.Getenv("localappdata") + "\\.cache\\" + strings.ReplaceAll(s, "/", "\\")
 }

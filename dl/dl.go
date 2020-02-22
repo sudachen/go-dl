@@ -50,7 +50,7 @@ func Load(a ...interface{}) SO {
 	}
 
 	if cached != "" {
-		if preload(cached,a...) {
+		if preload(cached, a...) {
 			so.verbose(fmt.Sprintf("trying to load `%v`", cached), 2)
 			so.dlHandle, _ = loadLibrary(cached)
 			if so.dlHandle != 0 {
@@ -124,11 +124,11 @@ type System string
 type Custom string
 
 func (c Custom) Preload(a ...interface{}) {
-	preload(string(c),a...)
+	preload(string(c), a...)
 }
 
 func (c Cached) Preload(a ...interface{}) {
-	preload(expandCache(string(c)),a...)
+	preload(expandCache(string(c)), a...)
 }
 
 func preload(sopath string, a ...interface{}) (ok bool) {
@@ -189,9 +189,9 @@ func preload(sopath string, a ...interface{}) (ok bool) {
 
 func (c Cached) Remove() (err error) {
 	s := expandCache(string(c))
-	_, err = os.Stat(s);
+	_, err = os.Stat(s)
 	if err == nil {
-		err = os.Remove(s)
+		return os.Remove(s)
 	}
 	return nil
 }
