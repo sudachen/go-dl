@@ -1,5 +1,5 @@
 /*
-Package github.com/sudachen/go-dl/dl implements loading shared libraries and binding functions
+Package dl implements loading shared libraries and binding functions
 */
 package dl
 
