@@ -22,13 +22,16 @@ jobs:
       - run: make run-tests
       #- run: /usr/local/bin/cc-test-reporter after-build -t gocov
 
-      - persist_to_workspace:
-          root: /tmp/ws
-          paths:
-            - bin
 
       - run: make win-build-all
-      - run: cp tests.exe /tmp/ws/bin
+      - run: mkdir bin
+
+      - persist_to_workspace:
+          root: .
+          paths:
+            - bin
+            
+      - run: cp tests.exe bin
 
   test-windows:
     executor: win/default
