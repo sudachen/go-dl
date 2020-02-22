@@ -105,7 +105,6 @@ func Load(a ...interface{}) SO {
 	return SO{}
 }
 
-
 /*
 Bind binds the pointer to the shared library function
 */
