@@ -16,16 +16,6 @@ import (
 	"unsafe"
 )
 
-type SO struct {
-	dlHandle unsafe.Pointer
-	verbose  Verbose
-	onerror  OnError
-}
-
-func (so SO) Ok() bool {
-	return so.dlHandle != nil
-}
-
 func Load(a ...interface{}) SO {
 	so := SO{
 		verbose: fu.IfsOption(Verbose(func(text string, vl int) {
@@ -46,75 +36,29 @@ func Load(a ...interface{}) SO {
 			s := reflect.ValueOf(q).String()
 			so.verbose(fmt.Sprintf("trying to load `%v`", s), 2)
 			so.dlHandle, _ = loadLibrary(s)
-			if so.dlHandle != nil {
+			if so.dlHandle != 0 {
 				return so
 			}
 		case Cached:
 			cached = expandCache(reflect.ValueOf(q).String())
 			so.verbose(fmt.Sprintf("trying to load `%v`", cached), 2)
 			so.dlHandle, _ = loadLibrary(cached)
-			if so.dlHandle != nil {
+			if so.dlHandle != 0 {
 				return so
 			}
 		}
 	}
 
-	external, zt := fu.StrMultiOption(a, External(""), GzipExternal(""), LzmaExternal(""))
-	if external != "" {
-
-		bf := bytes.Buffer{}
-
-		so.verbose(fmt.Sprintf("downloading `%v`", external), 1)
-		if resp, err := http.Get(external); err != nil {
-			so.onerror(err)
-			return SO{}
-		} else {
-			defer resp.Body.Close()
-			if _, err = io.Copy(&bf, resp.Body); err != nil {
-				so.onerror(err)
-				return SO{}
+	if cached != "" {
+		if preload(cached,a...) {
+			so.verbose(fmt.Sprintf("trying to load `%v`", cached), 2)
+			so.dlHandle, _ = loadLibrary(cached)
+			if so.dlHandle != 0 {
+				return so
 			}
-		}
-
-		if zt > 0 { // compressed
-			so.verbose("unpacking", 2)
-			bx := bf
-			bf = bytes.Buffer{}
-			err := error(nil)
-			switch zt {
-			case 1: // GzipExternal
-				var z io.ReadCloser
-				if z, err = gzip.NewReader(&bx); err == nil {
-					defer z.Close()
-					_, err = io.Copy(&bf, z)
-				}
-			case 2: // LzmaExternal
-				var z io.Reader
-				if z, err = xz.NewReader(&bx); err == nil {
-					_, err = io.Copy(&bf, z)
-				}
-				//default:
-				//	panic("unknown compression")
-			}
-			if err != nil {
-				so.onerror(err)
-				return SO{}
-			}
-		}
-
-		so.verbose(fmt.Sprintf("caching as `%v`", cached), 2)
-		_ = os.MkdirAll(filepath.Dir(cached), 0755)
-		if err := ioutil.WriteFile(cached, bf.Bytes(), 0644); err != nil {
-			so.onerror(err)
-			return SO{}
-		}
-
-		so.verbose(fmt.Sprintf("trying to load `%v`", cached), 2)
-		so.dlHandle, _ = loadLibrary(cached)
-		if so.dlHandle != nil {
-			return so
 		}
 	}
+
 	so.onerror(xerrors.Errorf("not found or failed to load dynamic library"))
 	return SO{}
 }
@@ -160,6 +104,16 @@ func (so SO) Bind(funcname string, ptrptr unsafe.Pointer) {
 	}
 }
 
+func (so SO) Ok() bool {
+	return so.dlHandle != 0
+}
+
+type SO struct {
+	dlHandle uintptr
+	verbose  Verbose
+	onerror  OnError
+}
+
 type LzmaExternal string
 type GzipExternal string
 type External string
@@ -168,3 +122,76 @@ type OnError func(error)
 type Cached string
 type System string
 type Custom string
+
+func (c Custom) Preload(a ...interface{}) {
+	preload(string(c),a...)
+}
+
+func (c Cached) Preload(a ...interface{}) {
+	preload(expandCache(string(c)),a...)
+}
+
+func preload(sopath string, a ...interface{}) (ok bool) {
+	verbose := fu.IfsOption(Verbose(func(text string, vl int) {
+		if vl == 0 {
+			fmt.Println(text)
+		}
+	}), a).(Verbose)
+	onerror := fu.IfsOption(OnError(func(err error) {
+		panic(err.Error())
+	}), a).(OnError)
+
+	external, zt := fu.StrMultiOption(a, External(""), GzipExternal(""), LzmaExternal(""))
+	if external != "" {
+
+		bf := bytes.Buffer{}
+
+		verbose(fmt.Sprintf("downloading `%v`", external), 1)
+		if resp, err := http.Get(external); err == nil {
+			defer resp.Body.Close()
+			if _, err = io.Copy(&bf, resp.Body); err == nil {
+				if zt > 0 { // compressed
+					bx := bf
+					bf = bytes.Buffer{}
+					switch zt {
+					case 1: // GzipExternal
+						verbose("unpacking gzip", 2)
+						var z io.ReadCloser
+						if z, err = gzip.NewReader(&bx); err == nil {
+							defer z.Close()
+							_, err = io.Copy(&bf, z)
+						}
+					case 2: // LzmaExternal
+						verbose("unpacking lzma", 2)
+						var z io.Reader
+						if z, err = xz.NewReader(&bx); err == nil {
+							_, err = io.Copy(&bf, z)
+						}
+						//default:
+						//	panic("unknown compression")
+					}
+				}
+				if err == nil {
+					verbose(fmt.Sprintf("caching as `%v`", sopath), 2)
+					_ = os.MkdirAll(filepath.Dir(sopath), 0755)
+					err = ioutil.WriteFile(sopath, bf.Bytes(), 0644)
+				}
+			}
+			if err != nil {
+				onerror(err)
+				return
+			}
+		}
+		ok = true
+	}
+	return
+}
+
+func (c Cached) Remove() (err error) {
+	s := expandCache(string(c))
+	_, err = os.Stat(s);
+	if err == nil {
+		err = os.Remove(s)
+	}
+	return nil
+}

@@ -1,3 +1,5 @@
+// +build !windows,amd64
+
 package dl
 
 /*
@@ -13,32 +15,32 @@ import (
 	"unsafe"
 )
 
-func loadLibrary(dlname string) (unsafe.Pointer, error) {
+func loadLibrary(dlname string) (uintptr, error) {
 	s := C.CString(dlname)
 	defer C.free(unsafe.Pointer(s))
 	h := C.dlopen(s, C.RTLD_LAZY)
 	if h == nil {
-		return h, xerrors.Errorf("failed to load dynamic library")
+		return 0, xerrors.Errorf("failed to load dynamic library")
 	}
-	return h, nil
+	return uintptr(h), nil
 }
 
-func bindFunction(h unsafe.Pointer, funcname string, p unsafe.Pointer) error {
+func bindFunction(h uintptr, funcname string, p unsafe.Pointer) error {
 	n := C.CString(funcname)
 	defer C.free(unsafe.Pointer(n))
-	fp := (*C.void)(C.dlsym(h, n))
-	if fp == nil {
+	fp := uintptr(C.dlsym(unsafe.Pointer(h), n))
+	if fp == 0 {
 		return xerrors.Errorf("dynamic library does not have symbol %v", funcname)
 	}
-	q := (**C.void)(p)
+	q := (*uintptr)(p)
 	(*q) = fp
 	return nil
 }
 
 func expandCache(s string) string {
-	if usr, err := user.Current(); err != nil {
+	usr, err := user.Current();
+	if err != nil {
 		panic(err.Error())
-	} else {
-		return usr.HomeDir + "/.cache/" + s
 	}
+	return usr.HomeDir + "/.cache/" + s
 }
