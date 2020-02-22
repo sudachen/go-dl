@@ -22,18 +22,21 @@ jobs:
       - run: make run-tests
       #- run: /usr/local/bin/cc-test-reporter after-build -t gocov
 
-      - attach_workspace:
-          at: /tmp/workspace
+      - persist_to_workspace:
+          root: /tmp/ws
+          paths:
+            - bin
+
       - run: make win-build-all
-      - run: cp tests.exe /tmp/workspace
+      - run: cp tests.exe /tmp/ws/bin
 
   test-windows:
     executor: win/default
 
     steps:
       - attach_workspace:
-          at: /tmp/workspace
-      - run: /tmp/workspace/tests.exe -test.v=true -test.coverprofile=c.out
+          at: ./ws
+      - run: .\ws\bin\tests.exe -test.v=true -test.coverprofile=c.out
 
 workflows:
   version: 2
