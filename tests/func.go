@@ -1,8 +1,5 @@
 package tests
 
-import "C"
-import "unsafe"
-
 /*
 int function(int);
 
@@ -13,6 +10,7 @@ int function(int);
 DEFINE_JUMPER(function);
 */
 import "C"
+import "unsafe"
 
 func function(i int) int {
 	return int(C.function(C.int(i)))

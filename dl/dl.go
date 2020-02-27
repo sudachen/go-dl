@@ -1,6 +1,26 @@
-/*
-Package dl implements loading shared libraries and binding functions
+//
+//Package dl implements loading shared libraries and binding functions
+//
 
+package dl
+
+import (
+	"bytes"
+	"compress/gzip"
+	"fmt"
+	"github.com/sudachen/go-foo/fu"
+	"github.com/ulikunitz/xz"
+	"golang.org/x/xerrors"
+	"io"
+	"io/ioutil"
+	"net/http"
+	"os"
+	"path/filepath"
+	"reflect"
+	"unsafe"
+)
+
+/*
 	/✱
 	int function(int);
 
@@ -34,25 +54,7 @@ Package dl implements loading shared libraries and binding functions
 	func main() {
 		C.function(0)
 	}
-
 */
-package dl
-
-import (
-	"bytes"
-	"compress/gzip"
-	"fmt"
-	"github.com/sudachen/go-fp/fu"
-	"github.com/ulikunitz/xz"
-	"golang.org/x/xerrors"
-	"io"
-	"io/ioutil"
-	"net/http"
-	"os"
-	"path/filepath"
-	"reflect"
-	"unsafe"
-)
 
 /*
 Load finds and loads shared library. Can download library form the Internet if it's required
